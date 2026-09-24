@@ -45,6 +45,118 @@ function getOption(options, name) {
   return (options ?? []).find((o) => o.name === name)?.value;
 }
 
+function getFocusedOption(options) {
+  return (options ?? []).find((o) => o.focused === true);
+}
+
+function getAutocompleteContext(options) {
+  return {
+    sprite: getOption(options, "sprite"),
+    functionName: getOption(options, "function"),
+    focused: getFocusedOption(options),
+  };
+}
+
+function uniqueStrings(values) {
+  return [...new Set(values.filter((v) => typeof v === "string" && v.length > 0))];
+}
+
+function startsWithFilter(values, query, limit = 25) {
+  const q = String(query ?? "").toLowerCase();
+  const normalized = uniqueStrings(values);
+
+  const starts = normalized.filter((v) => v.toLowerCase().startsWith(q));
+  const contains = normalized.filter(
+    (v) => !v.toLowerCase().startsWith(q) && v.toLowerCase().includes(q),
+  );
+
+  return [...starts, ...contains].slice(0, limit);
+}
+
+function autocompleteChoices(names, query) {
+  return startsWithFilter(names, query).map((name) => ({
+    name: name.slice(0, 100),
+    value: name.slice(0, 100),
+  }));
+}
+
+function targetNames(project) {
+  return (project.targets ?? []).map((target) => target.name).filter(Boolean);
+}
+
+function functionNames(target) {
+  return Object.keys(target?.niciumma?.functions ?? {});
+}
+
+function listNames(targets) {
+  const result = [];
+
+  for (const target of targets ?? []) {
+    for (const raw of Object.values(target?.lists ?? {})) {
+      if (Array.isArray(raw) && typeof raw[0] === "string") {
+        result.push(raw[0]);
+      } else if (raw && typeof raw === "object" && typeof raw.name === "string") {
+        result.push(raw.name);
+      }
+    }
+  }
+
+  return uniqueStrings(result);
+}
+
+async function handleAutocomplete(interaction, env) {
+  const options = interaction.data?.options ?? [];
+  const { sprite, functionName, focused } = getAutocompleteContext(options);
+  const query = focused?.value ?? "";
+
+  // sprite is focused: suggest sprite names plus the special "ls" mode.
+  if (focused?.name === "sprite") {
+    const project = await loadProject(env);
+    const names = ["ls", ...targetNames(project)];
+    return {
+      type: 8,
+      data: { choices: autocompleteChoices(names, query) },
+    };
+  }
+
+  // function is focused after a sprite has been selected.
+  if (focused?.name === "function") {
+    const project = await loadProject(env);
+
+    if (sprite === "ls") {
+      return {
+        type: 8,
+        data: {
+          choices: autocompleteChoices(
+            listNames(project.targets ?? []),
+            query,
+          ),
+        },
+      };
+    }
+
+    const target = findTarget(project, sprite);
+    if (!target) {
+      return {
+        type: 8,
+        data: { choices: [] },
+      };
+    }
+
+    return {
+      type: 8,
+      data: {
+        choices: autocompleteChoices(functionNames(target), query),
+      },
+    };
+  }
+
+  return {
+    type: 8,
+    data: { choices: [] },
+  };
+}
+
 async function loadProject(env) {
   const response = await fetch(env.DATA_BASE_URL, {
     headers: { "User-Agent": "Niciumma4/1.0" },
@@ -427,6 +539,18 @@ export default {
     // Discord's endpoint verification request.
     if (interaction.type === 1) {
       return json({ type: 1 });
+    }
+
+    if (interaction.type === 4) {
+      try {
+        return json(await handleAutocomplete(interaction, env));
+      } catch (error) {
+        console.error(error);
+        return json({
+          type: 8,
+          data: { choices: [] },
+        });
+      }
     }
 
     if (interaction.type === 2) {

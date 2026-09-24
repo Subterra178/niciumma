@@ -1,10 +1,8 @@
-import process from "node:process";
-
+const applicationId = process.env.DISCORD_APPLICATION_ID;
 const token = process.env.DISCORD_TOKEN;
-const appId = process.env.DISCORD_APPLICATION_ID;
 const guildId = process.env.DISCORD_GUILD_ID;
 
-if (!token || !appId) {
+if (!applicationId || !token) {
   console.error("DISCORD_TOKEN と DISCORD_APPLICATION_ID を環境変数に設定してください。");
   process.exit(1);
 }
@@ -17,29 +15,39 @@ const command = {
       type: 3,
       name: "sprite",
       description: "スプライト名（ls の場合はリスト表示）",
-      required: true
+      required: true,
+      autocomplete: true,
     },
     {
       type: 3,
       name: "function",
       description: "関数名、main、またはリスト名",
-      required: true
-    }
-  ]
+      required: true,
+      autocomplete: true,
+    },
+  ],
 };
 
 const url = guildId
-  ? `https://discord.com/api/v10/applications/${appId}/guilds/${guildId}/commands`
-  : `https://discord.com/api/v10/applications/${appId}/commands`;
+  ? `https://discord.com/api/v10/applications/${applicationId}/guilds/${guildId}/commands`
+  : `https://discord.com/api/v10/applications/${applicationId}/commands`;
 
-const r = await fetch(url, {
+const response = await fetch(url, {
   method: "PUT",
   headers: {
     "Authorization": `Bot ${token}`,
-    "Content-Type": "application/json"
+    "Content-Type": "application/json",
   },
-  body: JSON.stringify([command])
+  body: JSON.stringify([command]),
 });
 
-console.log(await r.text());
-if (!r.ok) process.exit(1);
+const text = await response.text();
+
+if (!response.ok) {
+  console.error(`Discord API error: ${response.status}`);
+  console.error(text);
+  process.exit(1);
+}
+
+console.log("Niciumma コマンドを登録しました。");
+console.log(text);
