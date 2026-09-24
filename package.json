@@ -6,7 +6,10 @@
   "scripts": {
     "inspect:sb3": "node tools/inspect-sb3.mjs",
     "convert:sb3": "node tools/convert-sb3-to-json.mjs",
-    "register": "node scripts/register-command.mjs"
+    "register": "node scripts/register-command.mjs",
+    "build:data": "node tools/build-data.mjs",
+    "clear:commands": "node scripts/clear-commands.mjs",
+    "deploy": "node tools/build-data.mjs && wrangler deploy"
   },
   "dependencies": {
     "scratch4js": "^1.2.4"

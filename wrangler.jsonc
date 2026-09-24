@@ -3,9 +3,6 @@
   "name": "niciumma",
   "main": "src/index.js",
   "compatibility_date": "2026-09-24",
-  "vars": {
-    "DATA_BASE_URL": "https://raw.githubusercontent.com/Subterra178/niciumma/main/data/project.json"
-  },
   "secrets": {
     "required": [
       "DISCORD_PUBLIC_KEY",
