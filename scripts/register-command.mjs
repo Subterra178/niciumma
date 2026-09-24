@@ -1,61 +1,45 @@
-import readline from "node:readline/promises";
-import { stdin as input, stdout as output } from "node:process";
+import process from "node:process";
 
-const rl = readline.createInterface({ input, output });
+const token = process.env.DISCORD_TOKEN;
+const appId = process.env.DISCORD_APPLICATION_ID;
+const guildId = process.env.DISCORD_GUILD_ID;
 
-const token =
-  process.env.DISCORD_TOKEN ||
-  await rl.question("Discord Bot Token: ");
-
-const applicationId =
-  process.env.DISCORD_APPLICATION_ID ||
-  await rl.question("Application ID: ");
-
-const guildId =
-  process.env.DISCORD_GUILD_ID ||
-  await rl.question("Guild ID (optional; Enter for global): ");
-
-rl.close();
+if (!token || !appId) {
+  console.error("DISCORD_TOKEN と DISCORD_APPLICATION_ID を環境変数に設定してください。");
+  process.exit(1);
+}
 
 const command = {
   name: "niciumma",
-  description: "Scratchプロジェクトを検索します",
+  description: "Scratchプロジェクトのスクリプトやリストを表示します",
   options: [
     {
       type: 3,
       name: "sprite",
-      description: "スプライト名（ls の場合は ls）",
-      required: true,
+      description: "スプライト名（ls の場合はリスト表示）",
+      required: true
     },
     {
       type: 3,
       name: "function",
-      description: "関数名（ls の場合はリスト名）",
-      required: true,
-    },
-  ],
+      description: "関数名、main、またはリスト名",
+      required: true
+    }
+  ]
 };
 
 const url = guildId
-  ? `https://discord.com/api/v10/applications/${applicationId}/guilds/${guildId}/commands`
-  : `https://discord.com/api/v10/applications/${applicationId}/commands`;
+  ? `https://discord.com/api/v10/applications/${appId}/guilds/${guildId}/commands`
+  : `https://discord.com/api/v10/applications/${appId}/commands`;
 
-const response = await fetch(url, {
+const r = await fetch(url, {
   method: "PUT",
   headers: {
-    Authorization: `Bot ${token}`,
-    "Content-Type": "application/json",
+    "Authorization": `Bot ${token}`,
+    "Content-Type": "application/json"
   },
-  body: JSON.stringify([command]),
+  body: JSON.stringify([command])
 });
 
-const body = await response.text();
-
-if (!response.ok) {
-  console.error(`Discord API error ${response.status}`);
-  console.error(body);
-  process.exit(1);
-}
-
-console.log("Niciumma4 command registered.");
-console.log(body);
+console.log(await r.text());
+if (!r.ok) process.exit(1);

@@ -1,13 +1,17 @@
 {
-  "name": "niciumma",
+  "name": "niciumma4",
+  "version": "1.0.0",
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "wrangler dev",
-    "deploy": "wrangler deploy",
-    "register:guild": "node scripts/register-command.mjs"
+    "inspect:sb3": "node tools/inspect-sb3.mjs",
+    "convert:sb3": "node tools/convert-sb3-to-json.mjs",
+    "register": "node scripts/register-command.mjs"
+  },
+  "dependencies": {
+    "scratch4js": "^1.2.4"
   },
   "devDependencies": {
-    "wrangler": "^4.0.0"
+    "wrangler": "^4.40.0"
   }
 }

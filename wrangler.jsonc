@@ -4,7 +4,7 @@
   "main": "src/index.js",
   "compatibility_date": "2026-09-24",
   "vars": {
-    "DATA_BASE_URL": "https://raw.githubusercontent.com/CHANGE_ME/Niciumma4/main/data/project.json"
+    "DATA_BASE_URL": "https://raw.githubusercontent.com/Subterra178/niciumma/main/data/project.json"
   },
   "secrets": {
     "required": [
