@@ -1,0 +1,15 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "niciumma4",
+  "main": "src/index.js",
+  "compatibility_date": "2026-09-24",
+  "vars": {
+    "DATA_BASE_URL": "https://raw.githubusercontent.com/CHANGE_ME/Niciumma4/main/data/project.json"
+  },
+  "secrets": {
+    "required": [
+      "DISCORD_PUBLIC_KEY",
+      "DISCORD_TOKEN"
+    ]
+  }
+}
